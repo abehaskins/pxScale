@@ -1,0 +1,19 @@
+{
+  "name": "pxScale",
+  "version": "0.1.0",
+  "description": "",
+  "main": "web.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.9.5",
+    "firebase": "^1.0.24",
+    "gm": "^1.16.0",
+    "node-imgur": "^0.1.2",
+    "q": "^1.0.1",
+    "request": "^2.44.0"
+  }
+}
