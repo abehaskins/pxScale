@@ -1,22 +1,22 @@
 var net = require('net'),
 	Q = require('q');
 
-exports.Server = function (socketName) {
+exports.Server = function (hostname, port) {
 	var server;
 
 	server = net.createServer();
-	server.listen(socketName);
+	server.listen(port, hostname);
 
 	return server;
 };
  
-exports.Client = function (socketName) {
+exports.Client = function (hostname, port) {
 	var client = new net.Socket(),
 		deferred = Q.defer();
 		connected = false;
 
 	var connect = function() {
-		client.connect(socketName);
+		client.connect(port, hostname);
 	};
 
 	var tryConnect = function () {

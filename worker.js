@@ -9,7 +9,7 @@ var boss;
 
 imgur.setClientID(secrets.IMGUR_CLIENT_ID);
 
-socket.Client("/tmp/pxScale.sock").then(function (socket) {
+socket.Client("127.0.0.1", 1337).then(function (socket) {
 	boss = socket;
 	boss.on('data', function(rData) {
 		var data = JSON.parse(rData);
@@ -23,39 +23,72 @@ function process(id, url, scale) {
 	var filenameOrig = id + '.png',
 		filenameScale = id + '_scaled.png';
 
-	request(url, function (err, res) {
+	request({url: url, timeout: 10e3}, function (err, res) {
 		if (err) {
-			boss.write({
+			boss.say({
 				id: id,
 				status: 'error',
-				error: err
+				error: 'download_failed'
 			});
+			cleanUp([filenameOrig, filenameScale]);
 			return;
 		}
 
 		var image = gm(filenameOrig);
 
 		image.size(function (err, size) {
+			if (!size) {
+				boss.say({
+					id: id,
+					status: 'error',
+					error: 'not_an_image'
+				});
+			   	cleanUp([filenameOrig, filenameScale]);
+				return;
+			}
 			image
 				.filter("Box")
 				.resize(size.width*scale, size.height*scale)
 				.setFormat("png")
 				.write(filenameScale, function (err) {
-					if (err) throw err;
+					if (err) {
+						boss.say({
+							id: id,
+							status: 'error',
+							error: 'resize_failed'
+						});
+			    		cleanUp([filenameOrig, filenameScale]);
+						return;
+					}
 
 					imgur.upload(filenameScale, function (err, data) {
-						if (err) throw err;
+						if (err) {
+							boss.say({
+								id: id,
+								status: 'error',
+								error: 'upload_failed'
+							});
+			    			cleanUp([filenameOrig, filenameScale]);
+							return;
+						}
 
 			    		boss.say({
 			    			id: id, 
 			    			status: "complete", 
 			    			link: data.data.link
 			    		});
-
-			    		fs.unlink(filenameOrig);
-			    		fs.unlink(filenameScale);
+			    		cleanUp([filenameOrig, filenameScale]);
+			    		return;
 					});
 				});
 		});
 	}).pipe(fs.createWriteStream(filenameOrig));
+}
+
+function cleanUp(files) {
+	var fileId, file;
+	for (fileId in files) {
+		file = files[fileId];
+		fs.unlink(file);
+	}
 }

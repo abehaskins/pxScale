@@ -1,13 +1,13 @@
 var request = require('request'),
-    express = require('express')
-    socket = require('./socket'),
-    Q = require('q');
+express = require('express')
+socket = require('./socket'),
+Q = require('q');
 
 var app = express(),
-	workers,
-	pendingRes = {};
+workers,
+pendingRes = {};
 
-var server = socket.Server("/tmp/pxScale.sock")
+var server = socket.Server("127.0.0.1", 1337)
 
 server.on("connection", function (socket) {
 	workers = socket;
@@ -18,12 +18,17 @@ server.on("connection", function (socket) {
 
 	workers.on("data", function (rData) {
 		var job = JSON.parse(rData),
-			res = pendingRes[job.id];
+		res = pendingRes[job.id];
 
 		console.log("Job ID: " + job.id + " - " + job.status);
 
-		if (job.status == "complete")
+		if (job.status == "complete") {
 			res.redirect(301, job.link); 
+		}
+
+		if (job.status == "error") {
+			res.send(job);
+		}
 
 		delete pendingRes[job.id];
 	});
@@ -31,22 +36,22 @@ server.on("connection", function (socket) {
 
 function initializeWebServer() {
 	app.get('/', function (req, res) {
-	  res.send("Hello!");
+		res.send("Hello!");
 	});
 
 	app.get(/\/([^/]+)\/(.+)/, function (req, res) {
-	  var scale = Number(req.params[0].replace('x', '')),
-	      url = req.params[1],
-	      jobID = makeUniqueID()
+		var scale = Number(req.params[0].replace('x', '')),
+		url = req.params[1],
+		jobID = makeUniqueID()
 
-	  if (url.slice(0, 7) !== 'http://' && url.slice(0, 8) !== 'https://')
-	  	url = "http://" + url;
+		if (url.slice(0, 7) !== 'http://' && url.slice(0, 8) !== 'https://')
+			url = "http://" + url;
 
-	  workers.say({url: url, scale: scale, id: jobID});
-	  pendingRes[jobID] = res;
+		workers.say({url: url, scale: scale, id: jobID});
+		pendingRes[jobID] = res;
 	});
 
-	app.listen(3000);
+app.listen(3000);
 }
 
 function makeUniqueID() {
