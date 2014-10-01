@@ -35,9 +35,11 @@ server.on("connection", function (socket) {
 			link = "/static/errors/pxscale-error-" + job.error + ".fw.png"; 
 		}
 
-		client.set(url + scale, link);
-		res.redirect(301, link);
-		delete pendingJobs[job.id];
+		if (job.status) {
+			client.set(url + scale, link);
+			res.redirect(301, link);
+			delete pendingJobs[job.id];
+		}
 	});
 });
 

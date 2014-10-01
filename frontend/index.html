@@ -1,1 +1,31 @@
-Welcome to pxScale.com!
+<html>
+<head>
+<title>pxScale.com - Scale Pixels (duh)</title>
+</head>
+<body>
+<h1>pxScale.com - Scale Pixels (duh)</h1>
+Scale images with minimal effort!
+<h2>Demo</h2>
+<input type="text" id="url" placeholder="Image URL">
+<select id="scale">
+  <option value="2">2x</option>
+  <option value="3">3x</option>
+  <option value="4">4x</option>
+</select>
+<button id="go">Go!</button>
+<h2>Using by Hand</h2>
+pxScale can be used on any image URL by simply putting "pxscale.com/2x/" in front of the URL for 2x scaling, "pxscale.com/3x/" for 3x, etc.  
+<br /><br />
+For example, to scale "http://i.imgur.com/AdPCnGW.gif" simply navigate to "pxscale.com/3x/http://i.imgur.com/AdPCnGW.gif" to get the <a href="http://pxscale.com/3x/http://i.imgur.com/AdPCnGW.gif">scaled version.</a>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script>
+$(document).ready(function () {
+  $("#go").click(function () {
+    var scale = $("#scale").val(),
+        url = $("#url").val();
+    document.location = "/x" + scale + "/" + url;
+  });
+});
+</script>
+</body>
+</html>
