@@ -6,8 +6,9 @@ FROM ubuntu:13.10
 RUN apt-get update
 
 # install nodejs and npm
-RUN apt-get install -y nodejs npm git git-core graphicsmagick
+RUN apt-get install -y nodejs npm git git-core graphicsmagick redis-server
 COPY . /src
 RUN cd /src; chmod +x ./start.sh
+RUN cd /src; npm install
 CMD cd /src; ./start.sh
 EXPOSE 3000
