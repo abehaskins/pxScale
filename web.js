@@ -35,7 +35,7 @@ server.on("connection", function (socket) {
 			link = "/static/errors/pxscale-error-" + job.error + ".fw.png"; 
 		}
 
-		if (job.status) {
+		if (url && scale && link) {
 			client.set(url + scale, link);
 			res.redirect(301, link);
 			delete pendingJobs[job.id];
