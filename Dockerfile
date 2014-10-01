@@ -10,3 +10,4 @@ RUN apt-get install -y nodejs npm git git-core graphicsmagick
 COPY . /src
 RUN cd /src; chmod +x ./start.sh
 CMD cd /src; ./start.sh
+EXPOSE 3000
