@@ -27,7 +27,7 @@ server.on("connection", function (socket) {
 		}
 
 		if (job.status == "error") {
-			res.redirect(301, "/frontend/static/errors/pxscale-error-" + job.error + ".png"); 
+			res.redirect(301, "/static/errors/pxscale-error-" + job.error + ".fw.png"); 
 		}
 
 		delete pendingRes[job.id];
