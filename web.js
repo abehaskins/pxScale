@@ -35,11 +35,9 @@ server.on("connection", function (socket) {
 			link = "/static/errors/pxscale-error-" + job.error + ".fw.png"; 
 		}
 
-		if (url && scale && link) {
-			client.set(url + scale, link);
-			res.redirect(301, link);
-			delete pendingJobs[job.id];
-		}
+		client.set(url + scale, link);
+		res.redirect(301, link);
+		delete pendingJobs[job.id];
 	});
 });
 
@@ -55,9 +53,9 @@ function initializeWebServer() {
 			job = {url: url, scale: scale, id: jobID};
 
 		if (url.slice(0, 7) !== 'http://' && url.slice(0, 8) !== 'https://')
-			url = "http://" + url;
+			job.url = "http://" + url;
 			
-	    client.get(url + scale, function (err, link) {
+	    client.get(job.url + job.scale + ' ', function (err, link) {
 	    	if (link) {
 	    		job.status = "auto_complete";
 	    		console.log("Job ID: " + job.id + " - " + job.status);

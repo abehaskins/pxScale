@@ -44,6 +44,7 @@ function process(id, url, scale) {
 			});
 			cleanUp([filenameOrig, filenameScale]);
 			done = true;
+			throw err;
 			return;
 		}
 
@@ -77,7 +78,9 @@ function process(id, url, scale) {
 					}
 
 					imgur.upload(filenameScale, function (err, data) {
-						if (err) {
+						var data = data.data;
+						
+						if (err || data.error) {
 							boss.say({
 								id: id,
 								status: 'error',
@@ -91,7 +94,7 @@ function process(id, url, scale) {
 			    		boss.say({
 			    			id: id, 
 			    			status: "complete", 
-			    			link: data.data.link
+			    			link: data.link
 			    		});
 			    		cleanUp([filenameOrig, filenameScale]);
 			    		done = true;
