@@ -20,10 +20,22 @@ socket.Client("127.0.0.1", 1337).then(function (socket) {
 function process(id, url, scale) {
 	console.log("Job ID: " + id, url, scale)
 
-	var filenameOrig = id + '.png',
-		filenameScale = id + '_scaled.png';
+	var filenameOrig = id,
+		filenameScale = id + '_scaled.gif',
+		done = false;;
 
-	request({url: url, timeout: 10e3}, function (err, res) {
+	setTimeout(function () {
+		if (done) return;
+		req.abort();
+		boss.say({
+			id: id,
+			status: 'error',
+			error: 'download_failed'
+		});
+		cleanUp([filenameOrig, filenameScale]);
+	}, 10e3);
+
+	var req = request({url: url}, function (err, res) {
 		if (err) {
 			boss.say({
 				id: id,
@@ -31,6 +43,7 @@ function process(id, url, scale) {
 				error: 'download_failed'
 			});
 			cleanUp([filenameOrig, filenameScale]);
+			done = true;
 			return;
 		}
 
@@ -44,12 +57,13 @@ function process(id, url, scale) {
 					error: 'not_an_image'
 				});
 			   	cleanUp([filenameOrig, filenameScale]);
+			   	done = true;
 				return;
 			}
 			image
 				.filter("Box")
 				.resize(size.width*scale, size.height*scale)
-				.setFormat("png")
+				.setFormat("gif")
 				.write(filenameScale, function (err) {
 					if (err) {
 						boss.say({
@@ -58,6 +72,7 @@ function process(id, url, scale) {
 							error: 'resize_failed'
 						});
 			    		cleanUp([filenameOrig, filenameScale]);
+			    		done = true;
 						return;
 					}
 
@@ -69,6 +84,7 @@ function process(id, url, scale) {
 								error: 'upload_failed'
 							});
 			    			cleanUp([filenameOrig, filenameScale]);
+			    			done = true;
 							return;
 						}
 
@@ -78,17 +94,19 @@ function process(id, url, scale) {
 			    			link: data.data.link
 			    		});
 			    		cleanUp([filenameOrig, filenameScale]);
+			    		done = true;
 			    		return;
 					});
 				});
 		});
-	}).pipe(fs.createWriteStream(filenameOrig));
+	});
+	req.pipe(fs.createWriteStream(filenameOrig));
 }
 
 function cleanUp(files) {
 	var fileId, file;
 	for (fileId in files) {
 		file = files[fileId];
-		fs.unlink(file);
+		fs.unlink(file, function () {});
 	}
 }
