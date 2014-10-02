@@ -9,5 +9,5 @@ pxScale is a web app which uses Express, GraphicsMagick, and Imgur to provide a 
 Example
 -------
 
-    pxfiddle.com/{Number}x/{URL}
+    pxscale.com/{Number}x/{URL}
 
