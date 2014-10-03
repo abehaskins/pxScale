@@ -80,7 +80,7 @@ function process(id, url, scale) {
 					}
 
 					imgur.upload(filenameScale, function (err, data) {					
-						if (err || !data || data.error) {
+						if (err || !data || data.error || !data.link)  {
 							boss.say({
 								id: id,
 								status: 'error',
