@@ -20,8 +20,10 @@ socket.Client("127.0.0.1", 1337).then(function (socket) {
 function process(id, url, scale) {
 	console.log("Job ID: " + id, url, scale)
 
-	var filenameOrig = id,
-		filenameScale = id + '_scaled.gif',
+	var ext = url.slice(url.search(/\.([^\.]+)$/), url.length)
+
+	var filenameOrig = id + ext,
+		filenameScale = id + '_scaled' + ext,
 		done = false;;
 
 	setTimeout(function () {
@@ -57,7 +59,7 @@ function process(id, url, scale) {
 					status: 'error',
 					error: 'not_an_image'
 				});
-			   	cleanUp([filenameOrig, filenameScale]);
+				cleanUp([filenameOrig, filenameScale]);
 			   	done = true;
 				return;
 			}
