@@ -33,6 +33,7 @@ server.on("connection", function (socket) {
 
 		if (job.status == "error") {
 			link = "/static/errors/pxscale-error-" + job.error + ".fw.png"; 
+			console.log(job.error)
 		}
 
 		client.set(url + scale, link);
@@ -55,6 +56,8 @@ function initializeWebServer() {
 			job.url = "http://" + job.url;
 		
 		job.url = job.url.replace('https://', 'http://');
+
+		console.log(job.url)
 			
 	    client.get(job.url + job.scale, function (err, link) {
 	    	if (link) {
