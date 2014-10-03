@@ -56,8 +56,6 @@ function initializeWebServer() {
 			job.url = "http://" + job.url;
 		
 		job.url = job.url.replace('https://', 'http://');
-
-		console.log(job.url)
 			
 	    client.get(job.url + job.scale, function (err, link) {
 	    	if (link) {
