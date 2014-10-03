@@ -48,14 +48,13 @@ function initializeWebServer() {
 
 	app.get(/\/([^/]+)\/(.+)/, function (req, res) {
 		var scale = Number(req.params[0].replace('x', '')),
-			url = req.params[1],
 			jobID = makeUniqueID(),
-			job = {url: url, scale: scale, id: jobID};
+			job = {url: req.params[1],, scale: scale, id: jobID};
 
-		if (url.slice(0, 7) !== 'http://' && url.slice(0, 8) !== 'https://')
+		if (job.url.slice(0, 7) !== 'http://' && job.url.slice(0, 8) !== 'https://')
 			job.url = "http://" + url;
 		
-		url = url.replace('https://', 'http://');
+		job.url = job.url.replace('https://', 'http://');
 			
 	    client.get(job.url + job.scale, function (err, link) {
 	    	if (link) {
@@ -66,7 +65,7 @@ function initializeWebServer() {
 	    	}
 
 			workers.say(job);
-			pendingJobs[jobID] = {res: res, url: url, scale: scale};
+			pendingJobs[jobID] = {res: res, url: job.url, scale: scale};
 	    })
 	});
 
