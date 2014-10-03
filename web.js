@@ -52,7 +52,7 @@ function initializeWebServer() {
 			job = {url: req.params[1], scale: scale, id: jobID};
 
 		if (job.url.slice(0, 7) !== 'http://' && job.url.slice(0, 8) !== 'https://')
-			job.url = "http://" + url;
+			job.url = "http://" + job.url;
 		
 		job.url = job.url.replace('https://', 'http://');
 			
