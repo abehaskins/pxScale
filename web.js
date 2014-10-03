@@ -52,12 +52,12 @@ function initializeWebServer() {
 			jobID = makeUniqueID(),
 			job = {url: req.params[1], scale: scale, id: jobID},
 			noCache = req.query.noCache;
+		
+		job.url = job.url.replace(/https?:\/\/?/, 'http://')
 
-		if (job.url.slice(0, 7) !== 'http://' && job.url.slice(0, 8) !== 'https://') {
+		if (job.url.slice(0, 7) !== 'http://') {
 			job.url = "http://" + job.url;
 		}
-		
-		job.url = job.url.replace('https://', 'http://');
 			
 	    client.get(job.url + job.scale + (noCache? '???' : ''), function (err, link) {
 	    	if (link) {
