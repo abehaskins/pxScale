@@ -77,9 +77,7 @@ function process(id, url, scale) {
 						return;
 					}
 
-					imgur.upload(filenameScale, function (err, data) {
-						var data = data.data;
-						
+					imgur.upload(filenameScale, function (err, data) {					
 						if (err || data.error) {
 							boss.say({
 								id: id,
@@ -90,6 +88,8 @@ function process(id, url, scale) {
 			    			done = true;
 							return;
 						}
+
+						var data = data.data;
 
 			    		boss.say({
 			    			id: id, 
