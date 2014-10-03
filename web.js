@@ -54,6 +54,8 @@ function initializeWebServer() {
 
 		if (url.slice(0, 7) !== 'http://' && url.slice(0, 8) !== 'https://')
 			job.url = "http://" + url;
+		
+		url = url.replace('https://', 'http://');
 			
 	    client.get(job.url + job.scale + ' ', function (err, link) {
 	    	if (link) {
