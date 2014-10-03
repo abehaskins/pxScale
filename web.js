@@ -57,7 +57,7 @@ function initializeWebServer() {
 		
 		url = url.replace('https://', 'http://');
 			
-	    client.get(job.url + job.scale + ' ', function (err, link) {
+	    client.get(job.url + job.scale, function (err, link) {
 	    	if (link) {
 	    		job.status = "auto_complete";
 	    		console.log("Job ID: " + job.id + " - " + job.status);
