@@ -24,7 +24,7 @@ function process(id, url, scale) {
 
 	var filenameOrig = id + ext,
 		filenameScale = id + '_scaled' + ext,
-		done = false;;
+		done = false;
 
 	setTimeout(function () {
 		if (done) return;
@@ -79,13 +79,14 @@ function process(id, url, scale) {
 						return;
 					}
 
-					imgur.upload(filenameScale, function (err, data) {					
-						if (err || !data || data.error || !data.link)  {
+					imgur.upload(filenameScale, function (err, data) {			
+						if (err || !data || !data.data || data.error || !data.data.link)  {
 							boss.say({
 								id: id,
 								status: 'error',
 								error: 'upload_failed'
 							});
+							console.log(err, data)
 			    			cleanUp([filenameOrig, filenameScale]);
 			    			done = true;
 							return;

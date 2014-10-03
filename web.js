@@ -7,9 +7,9 @@ var request = require('request'),
 var app = express(),
 	workers,
 	pendingJobs = {},
-	client = redis.createClient();;
+	client = redis.createClient();
 
-var server = socket.Server("127.0.0.1", 1337)
+var server = socket.Server("127.0.0.1", 1337);
 
 server.on("connection", function (socket) {
 	workers = socket;
@@ -50,14 +50,16 @@ function initializeWebServer() {
 	app.get(/\/([^/]+)\/(.+)/, function (req, res) {
 		var scale = Number(req.params[0].replace('x', '')),
 			jobID = makeUniqueID(),
-			job = {url: req.params[1], scale: scale, id: jobID};
+			job = {url: req.params[1], scale: scale, id: jobID},
+			noCache = req.query.noCache;
 
-		if (job.url.slice(0, 7) !== 'http://' && job.url.slice(0, 8) !== 'https://')
+		if (job.url.slice(0, 7) !== 'http://' && job.url.slice(0, 8) !== 'https://') {
 			job.url = "http://" + job.url;
+		}
 		
 		job.url = job.url.replace('https://', 'http://');
 			
-	    client.get(job.url + job.scale, function (err, link) {
+	    client.get(job.url + job.scale + (noCache? '???' : ''), function (err, link) {
 	    	if (link) {
 	    		job.status = "auto_complete";
 	    		console.log("Job ID: " + job.id + " - " + job.status);
