@@ -46,7 +46,6 @@ function process(id, url, scale) {
 			});
 			cleanUp([filenameOrig, filenameScale]);
 			done = true;
-			throw err;
 			return;
 		}
 
@@ -107,6 +106,15 @@ function process(id, url, scale) {
 		});
 	});
 	req.pipe(fs.createWriteStream(filenameOrig));
+
+	req.on('error', function () {
+		boss.say({
+			id: id,
+			status: 'error',
+			error: 'download_failed'
+		});
+		cleanUp([filenameOrig, filenameScale]);
+	});
 }
 
 function cleanUp(files) {
