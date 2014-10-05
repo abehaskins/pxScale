@@ -1,0 +1,99 @@
+body {
+	padding: 0px;
+	margin: 0px;
+	font-family: "Roboto";
+	background-color: #173F70;
+	color: white;
+}
+
+.header {
+	background-color: #235189;
+	color: white;
+	text-align: center;
+	padding-bottom: 20px;
+}
+
+.header h1 {
+	font-size: 100px;
+	margin: 0px;
+	padding: 0px;
+}
+
+.header h2 {
+	font-size: 20px;
+	opacity: 0.5;
+	margin: 0px;
+	padding: 0px;
+}
+
+.example {
+	background-color: #235189;
+	font-size: 30px;
+	width: 510px;
+	padding: 20px;
+	margin: 10px auto 0px auto;
+	font-family: "Inconsolata";
+}
+
+.quick {
+	width: 550px;
+	padding: 20px 0px;
+	margin: 0 auto;
+}
+
+.quick input {
+	height: 62px;
+	margin: 0px;
+	padding: 20px;
+	width: 480px;
+	float: left;
+	font-size: 30px;
+}
+
+.quick button {
+	float: right;
+	width: 60px;
+	height: 62px;
+	padding: 0px;
+	margin: 0px;
+	background-color: #0F294A;
+	color: white;
+	font-size: 20px;
+	border-width: 0px;
+	cursor: pointer;
+}
+
+.quick button:hover {
+	text-decoration: underline;
+}
+
+h3 {
+	color: #B0B0FF;
+	font-size: 30px;
+	width: 530px;
+	margin: 0 auto;
+	padding-top: 24px;
+	font-weight: normal;
+}
+
+.credits {
+	clear: both;
+	padding-top: 20px;
+	width: 300px;
+	margin: 0 auto;
+	text-align: center;
+}
+
+.credits a {
+	color: white;
+}
+
+.online {
+	clear: both;
+	padding-top: 24px;
+	width: 300px;
+	font-size: 12px;
+	margin: 0 auto;
+	opacity: 0.5;
+	text-align: center;
+}

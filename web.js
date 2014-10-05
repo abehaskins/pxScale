@@ -63,10 +63,6 @@ server.on("connection", function (socket) {
 });
 
 function initializeWebServer() {
-	app.get('/', function (req, res) {
-		res.send("Hello!");
-	});
-
 	app.get(/\/([^/]+)\/(.+)/, function (req, res) {
 		var scale = Number(req.params[0].replace('x', '')),
 			jobID = makeUniqueID(),

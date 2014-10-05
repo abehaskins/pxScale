@@ -1,31 +1,37 @@
 <html>
 <head>
-<title>pxScale.com - Scale Pixels (duh)</title>
+	<title>pxScale.com - Scale Pixels (duh)</title>
+	<link href='http://fonts.googleapis.com/css?family=Inconsolata|Lato|Roboto:400,900' rel='stylesheet' type='text/css'>
+	<link href="static/styles.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
-<h1>pxScale.com - Scale Pixels (duh)</h1>
-Scale images with minimal effort!
-<h2>Demo</h2>
-<input type="text" id="url" placeholder="Image URL">
-<select id="scale">
-  <option value="2">2x</option>
-  <option value="3">3x</option>
-  <option value="4">4x</option>
-</select>
-<button id="go">Go!</button>
-<h2>Using by Hand</h2>
-pxScale can be used on any image URL by simply putting "pxscale.com/2x/" in front of the URL for 2x scaling, "pxscale.com/3x/" for 3x, etc.  
-<br /><br />
-For example, to scale "http://i.imgur.com/zzVd3yH.jpg" simply navigate to "pxscale.com/3x/http://i.imgur.com/zzVd3yH.jpg" to get the <a href="http://pxscale.com/3x/http://i.imgur.com/zzVd3yH.jpg">scaled version.</a>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-<script>
-$(document).ready(function () {
-  $("#go").click(function () {
-    var scale = $("#scale").val(),
-        url = $("#url").val();
-    document.location = "/x" + scale + "/" + url;
-  });
-});
-</script>
+	<div class="header">
+		<h1>pxScale.com</h1>
+		<h2>Scale Pixel Art without losing crispness!</h2>
+	</div>
+
+	<h3>API Usage</h3>
+	<div class="example">
+		http://pxscale.com/{Number}x/{URL}
+	</div>
+
+	<h3>Quick Use</h3>
+	<div class="quick">
+		<input type="text" id="url" placeholder="Example (Scale 3x)"/>
+		<input type="hidden" id="scale" value="3" />
+		<button id="go">Go!</button>
+	</div>
+
+	<div class="online">
+		pxScale services are currently <span id="status">...</span>
+	</div>
+
+	<div class="credits">
+		by <a href="http://www.twitter.com/abeisgreat">@abeisgreat</a>
+	</div>
+
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.firebase.com/js/client/1.1.0/firebase.js"></script>
+	<script src="static/frontend.js"></script>
 </body>
 </html>
