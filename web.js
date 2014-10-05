@@ -2,12 +2,18 @@ var request = require('request'),
 	express = require('express'),
 	socket = require('./socket'),
 	Q = require('q'),
-	redis = require("redis");
+	redis = require("redis"),
+	Firebase = require("firebase"),
+	secrets = require("./secrets");
 
 var app = express(),
 	workers,
 	pendingJobs = {},
-	client = redis.createClient();
+	client = redis.createClient(),
+	rootRef = new Firebase('bucket.firebaseio.com/pxScale'),
+	statusRef = rootRef.child('status/web'),
+	completedLogRef = rootRef.child('log/completed'),
+	failedLogRef = rootRef.child('log/failed');
 
 var server = socket.Server("127.0.0.1", 1337);
 
@@ -19,8 +25,11 @@ server.on("connection", function (socket) {
 	};
 
 	workers.on("data", function (rData) {
-		var job = JSON.parse(rData),
-			res = pendingJobs[job.id].res,
+		var job = JSON.parse(rData);
+
+		if (!pendingJobs[job.id] || !pendingJobs[job.id].res) return;
+
+		var res = pendingJobs[job.id].res,
 			url = pendingJobs[job.id].url,
 			scale = pendingJobs[job.id].scale,
 			link;
@@ -29,11 +38,22 @@ server.on("connection", function (socket) {
 
 		if (job.status == "complete") {
 			link = job.link;
+			completedLogRef.push({
+				original: url,
+				output: job.link,
+				time: Firebase.ServerValue.TIMESTAMP
+			});
 		}
 
 		if (job.status == "error") {
 			link = "/static/errors/pxscale-error-" + job.error + ".fw.png"; 
-			console.log(job.error)
+			console.log(job.error);
+
+			failedLogRef.push({
+				original: url,
+				error: job.error,
+				time: Firebase.ServerValue.TIMESTAMP
+			});
 		}
 
 		client.set(url + scale, link);
@@ -72,11 +92,18 @@ function initializeWebServer() {
 	    })
 	});
 
-app.listen(3000);
+	app.listen(3000);
+	console.log("Web ready!");
 }
 
 function makeUniqueID() {
 	return Math.random().toString().replace('.', '');
 }
 
-initializeWebServer();
+rootRef.authWithCustomToken(secrets.FIREBASE_TOKEN, function (err) {
+	if (err) throw err;
+	statusRef.set("online");
+	statusRef.onDisconnect().set("offline");
+
+	initializeWebServer();
+});
