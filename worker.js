@@ -22,6 +22,16 @@ function process(id, url, scale) {
 
 	var ext = url.slice(url.search(/\.([^\.]+)$/), url.length)
 
+	if (ext.indexOf("/") !== -1) {
+		boss.say({
+			id: id,
+			status: 'error',
+			error: 'no_extension'
+		});
+		done = true;
+		return;
+	}
+
 	var filenameOrig = id + ext,
 		filenameScale = id + '_scaled' + ext,
 		done = false;
@@ -36,6 +46,20 @@ function process(id, url, scale) {
 		});
 		cleanUp([filenameOrig, filenameScale]);
 	}, 10e3);
+
+	var wstream = fs.createWriteStream(filenameOrig);
+
+	wstream.on("error", function () {
+		req.abort();
+		boss.say({
+			id: id,
+			status: 'error',
+			error: 'writing_failed'
+		});
+		cleanUp([filenameOrig, filenameScale]);
+		done = true;
+		return;
+	});
 
 	var req = request({url: url}, function (err, res) {
 		if (err) {
@@ -98,14 +122,14 @@ function process(id, url, scale) {
 			    			status: "complete", 
 			    			link: data.link
 			    		});
-			    		cleanUp([filenameOrig, filenameScale]);
+			    		//cleanUp([filenameOrig, filenameScale]);
 			    		done = true;
 			    		return;
 					});
 				});
 		});
 	});
-	req.pipe(fs.createWriteStream(filenameOrig));
+	req.pipe(wstream);
 
 	req.on('error', function () {
 		boss.say({
