@@ -1,8 +1,10 @@
 var ref = new Firebase("bucket.firebaseio.com/pxScale");
 
 ref.child("status").on("value", function (snapshot) {
-	$("#status").text(snapshot.val().web);
+	$("#statusWeb").text(snapshot.val().web);
+	$("#statusWorker").text(snapshot.val().worker);
 });
+
 
 $(document).ready(function () {
 	$("#go").click(function () {
