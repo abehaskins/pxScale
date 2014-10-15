@@ -2,6 +2,7 @@ var request = require('request'),
 	express = require('express'),
 	socket = require('./socket'),
 	Q = require('q'),
+	colors = require('colors'),
 	redis = require("redis"),
 	Firebase = require("firebase"),
 	secrets = require("./secrets");
@@ -34,9 +35,8 @@ server.on("connection", function (socket) {
 			scale = pendingJobs[job.id].scale,
 			link;
 
-		console.log("Job ID: " + job.id + " - " + job.status);
-
 		if (job.status == "complete") {
+			console.log(["Job ID:", job.id, "-", job.status].join(' ').green);
 			link = job.link;
 			completedLogRef.push({
 				original: url,
@@ -46,9 +46,10 @@ server.on("connection", function (socket) {
 		}
 
 		if (job.status == "error") {
-			link = "/static/errors/pxscale-error-" + job.error + ".fw.png"; 
-			console.log(job.error);
-
+			console.log(["Job ID:", job.id, "-", job.status].join(' ').red);
+			console.error(job.error.red);
+			
+			link = "/static/errors/pxscale-error-" + job.error + ".fw.png";
 			failedLogRef.push({
 				original: url,
 				error: job.error,
@@ -65,7 +66,7 @@ server.on("connection", function (socket) {
 function initializeWebServer() {
 	app.get(/\/([^/]+)\/(.+)/, function (req, res) {
 		var scale = Number(req.params[0].replace('x', '')),
-			jobID = makeUniqueID(),
+			jobID = getUniqueID(),
 			job = {url: req.params[1], scale: scale, id: jobID},
 			noCache = req.query.noCache;
 		
@@ -78,8 +79,8 @@ function initializeWebServer() {
 	    client.get(job.url + job.scale + (noCache? '???' : ''), function (err, link) {
 	    	if (link) {
 	    		job.status = "auto_complete";
-	    		console.log("Job ID: " + job.id + " - " + job.status);
-	    		res.redirect(301, link);
+	    		console.log(["Job ID:", job.id, "-", job.status].join(' ').cyan);
+	    		res.redirect(302, link);
 	    		return;
 	    	}
 
@@ -89,10 +90,10 @@ function initializeWebServer() {
 	});
 
 	app.listen(3000);
-	console.log("Web ready!");
+	console.log("Web ready!".rainbow);
 }
 
-function makeUniqueID() {
+function getUniqueID() {
 	return Math.random().toString().replace('.', '');
 }
 

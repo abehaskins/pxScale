@@ -1,5 +1,6 @@
 var net = require('net'),
-	Q = require('q');
+	Q = require('q'),
+	colors = require('colors');
 
 exports.Server = function (hostname, port) {
 	var server;
@@ -12,7 +13,7 @@ exports.Server = function (hostname, port) {
  
 exports.Client = function (hostname, port) {
 	var client = new net.Socket(),
-		deferred = Q.defer();
+		deferred = Q.defer(),
 		connected = false;
 
 	var connect = function() {
@@ -28,7 +29,7 @@ exports.Client = function (hostname, port) {
 	};
 
 	client.on("connect", function() {
-		console.log("Connection established!");
+		console.log("Connection established!".bgGreen);
 		deferred.resolve(client);
 		connected = true;
 	});
@@ -38,7 +39,8 @@ exports.Client = function (hostname, port) {
 	});
 	 
 	client.on('close', function() {
-		console.log('Connection closed');
+		if (connected)
+			console.log('Connection closed'.bgRed);
 		connected = false;
 		tryConnect();
 	});
