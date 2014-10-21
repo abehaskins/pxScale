@@ -1,46 +1,13 @@
-var imgur = require('imgur-upload'),
-	socket = require('./socket'),
-	secrets = require('./secrets'),
-	config = require(['.', 'config', process.argv[2]].join('/')),
+var utils = require('./utils'),
 	request = require('request'),
-	Firebase = require('firebase'),
-	gm = require('gm'),
+	async = require('async'),
 	fs = require('fs'),
-	colors = require('colors'),
-	async = require('async');
-
-var boss,
-	worker = {},
-	rootRef = new Firebase('bucket.firebaseio.com/pxScale'),
-	statusRef = rootRef.child('status/color-worker');
+	gm = require('gm'),
+	Worker = require('./worker').Worker;
 	
-rootRef.authWithCustomToken(secrets.FIREBASE_TOKEN, function (err) {
-	if (err) throw err;
-	
-	statusRef.set("online");
-	statusRef.onDisconnect().set("offline");
+var worker = new Worker("color");
 
-	initializeWorker();
-});
-
-function initializeWorker() {
-	console.log("Worker ready!".rainbow);
-	imgur.setClientID(secrets.IMGUR_CLIENT_ID);
-	
-	socket.Client("127.0.0.1", config.work_port).then(function (socket) {
-		boss = socket;
-		boss.on('data', function(rData) {
-			var data = JSON.parse(rData);
-			
-			if (data.type == 'handshake')
-				boss.say({profession: "scale"});
-			else if (data.type == 'job')
-				initializeJob(data.id);
-		});
-	});
-}
-
-function initializeJob(id) {
+worker.work = function (data) {
 	var small = {
 		filename: ...,
 	}
