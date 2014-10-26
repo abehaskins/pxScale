@@ -13,7 +13,7 @@ var app = express(),
 	statusRef = rootRef.child('status/web'),
 	completedLogRef = rootRef.child('log/completed'),
 	failedLogRef = rootRef.child('log/failed'),
-	client = redis.createClient(),
+	client = redis.createClient(6379, config.redis_host),
 	pendingRes = {};
 	
 var boss = new Boss();
@@ -25,6 +25,7 @@ boss.on("download", function (job, id, results) {
 	delete job.results;
 	
 	boss.demand("scale", job, id);
+	boss.demand("color", job);
 }, redirectToError);
 
 boss.on("scale", function (job, id, results) {
@@ -41,6 +42,12 @@ boss.on("scale", function (job, id, results) {
 	pendingRes[id].redirect(301, link);
 	// Done!
 }, redirectToError);
+
+boss.on("color", function (job, id, results) {
+	console.log('yay success')
+}, function (job, id, results) {
+	console.log('Color error')
+});
 
 function initializeWebServer() {
 	
