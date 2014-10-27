@@ -3,6 +3,7 @@ var utils = require('./utils'),
 	secrets = require("./secrets"),
 	colors = require('colors'),
 	copy = require('copy'),
+	_ = require('lodash'),
 	config = require(['.', 'config', process.argv[2]].join('/'));
 	
 var Boss = function () {
@@ -14,7 +15,7 @@ var Boss = function () {
 	
 	// Watch for new worker connections
 	self.server.on("connection", function (socket) {
-		var worker = socket;
+		var workerData, worker = socket;
 	
 		worker.id = utils.getUniqueID();
 		
@@ -27,11 +28,17 @@ var Boss = function () {
 			id: worker.id
 		});
 		
+		worker.on("close", function () {
+			console.log("Worker died!".bgRed);
+			delete self.workers[workerData.profession][worker.id];
+		});
+		
 		worker.once("data", function (rData) {
-			var data = JSON.parse(rData);
+			workerData = JSON.parse(rData);
+			console.log("Worker born!".bgGreen);
 			
-			(self.workers[data.profession] || (self.workers[data.profession] = []))
-				.push(worker);
+			(self.workers[workerData.profession] || (self.workers[workerData.profession] = {}))
+				[worker.id] = worker;
 			
 			worker.on("data", function () {	
 				self.processIncoming.apply(self, Array.prototype.slice.call(arguments));
@@ -71,20 +78,20 @@ Boss.prototype.demand = function (profession, suppliedJob, suppliedJobID) {
 	var self = this,
 		job = copy(suppliedJob);
 	
-	if (!self.workers[profession] || !self.workers[profession].length) {
+	if (!self.workers[profession] || self.workers[profession] == {}) {
 		console.log(("No workers of type '" + profession + "' known!").bgRed);
 		return;
 	}
 
-	var	scaleWorkerId = Math.floor(self.workers[profession].length*Math.random()),
-		jobId = suppliedJobID || utils.getUniqueID();
+	var	jobId = suppliedJobID || utils.getUniqueID(),
+		worker = _(this.workers[profession]).sample(1).value()[0];
 	
 	job.type = "job";
 	job.id = jobId;
 	job.profession = profession;
 	
 	self.pendingJobs[jobId] = job;
-	self.workers[profession][scaleWorkerId].say(job);
+	worker.say(job);
 }
 
 Boss.prototype.on = function (profession, successCb, errorCb) {

@@ -1,2 +1,2 @@
 echo "Running redis..."
-redis-server
+redis-server &
