@@ -1,8 +1,8 @@
-var utils = require('./utils'),
+var utils = require('../utils/utils'),
 	request = require('request'),
 	async = require('async'),
 	fs = require('fs'),
-	Worker = require('./worker').Worker;
+	Worker = require('../utils/worker').Worker;
 	
 var worker = new Worker("download");
 

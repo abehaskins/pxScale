@@ -1,11 +1,11 @@
-var utils = require('./utils'),
+var utils = require('../utils/utils'),
 	request = require('request'),
 	async = require('async'),
 	fs = require('fs'),
 	gm = require('gm'),
 	_ = require('lodash'),
 	redis = require('redis'),
-	Worker = require('./worker').Worker;
+	Worker = require('../utils/worker').Worker;
 	
 var worker = new Worker("color");
 

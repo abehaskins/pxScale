@@ -1,0 +1,21 @@
+<html>
+    <head>
+        <title>pxScale</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"></script>
+        <script>
+            angular.module('pxScale', [])
+                .controller("ImageInfo", function ($scope) {
+                    $scope.url = "http://pxscale.com" + location.pathname.replace('/2.0', '');
+                });
+        </script>
+        <style>
+            body {
+                padding: 0px;
+                margin: 0px;
+            }
+        </style>
+    </head>
+    <body ng-app="pxScale" ng-controller="ImageInfo">
+        <img ng-src="{{url}}" />
+    </body>
+</html>

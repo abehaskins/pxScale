@@ -2,9 +2,9 @@ var imgur = require('imgur-upload'),
 	gm = require('gm'),
 	colors = require('colors'),
 	async = require('async'),
-	secrets = require('./secrets'),
-	utils = require('./utils'),
-	Worker = require('./worker').Worker;
+	secrets = require('../config/secrets'),
+	utils = require('../utils/utils'),
+	Worker = require('../utils/worker').Worker;
 	
 var worker = new Worker("scale");
 

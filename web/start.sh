@@ -1,6 +1,8 @@
 echo "Running Download Worker..."
-nodejs download-worker.js prod &
+nodejs workers/download-worker.js prod &
 echo "Running Scale Worker..."
-nodejs scale-worker.js prod &
+nodejs workers/scale-worker.js prod &
+echo "Running Color Worker..."
+nodejs workers/color-worker.js prod &
 echo "Running Web..."
 nodejs web.js prod

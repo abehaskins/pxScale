@@ -1,12 +1,11 @@
 var utils = require('./utils'),
 	socket = require('./socket'),
-	secrets = require("./secrets"),
+	secrets = require("../config/secrets"),
 	colors = require('colors'),
 	copy = require('copy'),
-	_ = require('lodash'),
-	config = require(['.', 'config', process.argv[2]].join('/'));
+	_ = require('lodash');
 	
-var Boss = function () {
+var Boss = function (config) {
 	var self = this;
 	self.workers = {},
 	self.pendingJobs = {},
@@ -76,19 +75,19 @@ Boss.prototype.processIncoming = function (rData) {
 
 Boss.prototype.demand = function (profession, suppliedJob, suppliedJobID) {
 	var self = this,
-		job = copy(suppliedJob);
-	
-	if (!self.workers[profession] || self.workers[profession] == {}) {
-		console.log(("No workers of type '" + profession + "' known!").bgRed);
-		return;
-	}
-
-	var	jobId = suppliedJobID || utils.getUniqueID(),
+		job = copy(suppliedJob),
+		jobId = suppliedJobID || utils.getUniqueID(),
 		worker = _(this.workers[profession]).sample(1).value()[0];
 	
 	job.type = "job";
 	job.id = jobId;
 	job.profession = profession;
+	
+	if (!worker) {
+		console.log(("No workers of type '" + profession + "' known!").bgRed);
+		self.callbacks[profession].error(job, job.id, "download_failed");
+		return;
+	}
 	
 	self.pendingJobs[jobId] = job;
 	worker.say(job);

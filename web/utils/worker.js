@@ -32,11 +32,12 @@ Worker.prototype.initialize = function () {
 		self.boss.on('data', function(rData) {
 			var data = JSON.parse(rData);
 			
-			if (data.type == 'handshake')
+			if (data.type == 'handshake') {
 				self.boss.say({
 					profession: self.profession
 				});
-			else if (data.type == 'job')
+				console.log("Worker ready!".rainbow);
+			} else if (data.type == 'job') {
 				self.work.call(self, data, function (err) {
 					var results = Array.prototype.slice.call(arguments, 1);
 
@@ -57,8 +58,7 @@ Worker.prototype.initialize = function () {
 			    		});
 					}
 				});
-			
-			console.log("Worker ready!".rainbow);
+			}
 		});
 	});
 }

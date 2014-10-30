@@ -2,11 +2,19 @@ var express = require('express'),
 	Q = require('q'),
 	colors = require('colors'),
 	redis = require("redis"),
+	fs = require('fs'),
 	Firebase = require("firebase"),
-	secrets = require("./secrets"),
-	config = require(['.', 'config', process.argv[2]].join('/')),
-	utils = require('./utils'),
-	Boss = require('./boss').Boss;
+	secrets = require("./config/secrets"),
+	utils = require('./utils/utils'),
+	Boss = require('./utils/boss').Boss,
+	config;
+	
+try {
+	config = require(['.', 'config', process.argv[2]].join('/'));
+} catch (err) {
+	console.log("Please specify a valid config mode".bgRed);
+	process.exit(1);
+}
 
 var app = express(),
 	rootRef = new Firebase('bucket.firebaseio.com/pxScale'),
@@ -16,7 +24,7 @@ var app = express(),
 	client = redis.createClient(6379, config.redis_host),
 	pendingRes = {};
 	
-var boss = new Boss();
+var boss = new Boss(config);
 
 boss.on("download", function (job, id, results) {
 	// Success	
@@ -51,33 +59,37 @@ boss.on("color", function (job, id, results) {
 
 function initializeWebServer() {
 	
-	app.get(/\/([^/]+)\/(.+)/, function (req, res) {
-		var jobID = utils.getUniqueID(),
-			scale = Number(req.params[0].replace('x', '')),
-			job = {
-				url: req.params[1].replace(/https?:\/\/?/, 'http://'), 
-				scale: scale, 
-				id: jobID
-			},
-			noCache = req.query.no_cache || config.no_cache;
-
-		if (job.url.slice(0, 7) !== 'http://') {
-			job.url = "http://" + job.url;
+	app.get(/\/([^/]+x)\/(.+)/, function (req, res) {
+		if (req.headers.accept.indexOf("html") !== -1) {
+			res.sendFile([__dirname, 'templates', 'scale.html'].join('/'));
+		} else {
+			var jobID = utils.getUniqueID(),
+				scale = Number(req.params[0].replace('x', '')),
+				job = {
+					url: req.params[1].replace(/https?:\/\/?/, 'http://'), 
+					scale: scale, 
+					id: jobID
+				},
+				noCache = req.query.no_cache || config.no_cache;
+	
+			if (job.url.slice(0, 7) !== 'http://') {
+				job.url = "http://" + job.url;
+			}
+				
+		    client.get(job.url + job.scale + (noCache? '???' : ''), function (err, link) {
+		    	if (link) {
+		    		job.status = "auto_complete";
+		    		console.log(["Job ID:", job.id, "-", job.status].join(' ').cyan);
+		    		res.redirect(302, link);
+		    		return;
+		    	}
+				
+				pendingRes[jobID] = res;
+				boss.demand("download", job, jobID);
+		    });
 		}
-			
-	    client.get(job.url + job.scale + (noCache? '???' : ''), function (err, link) {
-	    	if (link) {
-	    		job.status = "auto_complete";
-	    		console.log(["Job ID:", job.id, "-", job.status].join(' ').cyan);
-	    		res.redirect(302, link);
-	    		return;
-	    	}
-			
-			pendingRes[jobID] = res;
-			boss.demand("download", job, jobID);
-	    })
 	});
-
+	
 	app.listen(config.http_port);
 	
 	console.log("Web ready!".rainbow);
