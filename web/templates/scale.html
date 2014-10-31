@@ -5,7 +5,7 @@
         <script>
             angular.module('pxScale', [])
                 .controller("ImageInfo", function ($scope) {
-                    $scope.url = "http://pxscale.com" + location.pathname.replace('/2.0', '');
+                    $scope.url = location.pathname;
                 });
         </script>
         <style>
