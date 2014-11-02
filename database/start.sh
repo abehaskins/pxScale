@@ -1,2 +1,2 @@
-echo "Running redis..."
-redis-server
+echo "Running rethinkdb..."
+rethinkdb --bind all

@@ -1,7 +1,7 @@
 var express = require('express'),
 	Q = require('q'),
 	colors = require('colors'),
-	redis = require("redis"),
+	r = require('rethinkdb'),
 	fs = require('fs'),
 	Firebase = require("firebase"),
 	secrets = require("./config/secrets"),
@@ -17,14 +17,22 @@ try {
 }
 
 var app = express(),
+	boss = new Boss(config),
 	rootRef = new Firebase('bucket.firebaseio.com/pxScale'),
 	statusRef = rootRef.child('status/web'),
 	completedLogRef = rootRef.child('log/completed'),
 	failedLogRef = rootRef.child('log/failed'),
-	client = redis.createClient(6379, config.redis_host),
-	pendingRes = {};
+	pendingRes = {},
+	table = r.table("images"),
+	connection;
 	
-var boss = new Boss(config);
+r.connect({
+    host: 'localhost',
+    port: 28015,
+    db: "pxscale_data"
+}, function (err, conn) {
+	connection = conn;	
+});
 
 boss.on("download", function (job, id, results) {
 	// Success	
@@ -38,7 +46,8 @@ boss.on("download", function (job, id, results) {
 
 boss.on("scale", function (job, id, results) {
 	// Success	
-	var link = results[0];
+	var link = results[0],
+		lookup = {url: job.url, scale: job.scale};
 	
 	completedLogRef.push({
 		original: job.url,
@@ -46,7 +55,10 @@ boss.on("scale", function (job, id, results) {
 		time: Firebase.ServerValue.TIMESTAMP
 	});
 	
-	client.set(job.url + job.scale, link);
+	utils.updateImageData(lookup, {link: link}, connection, function (err, image) {
+		console.log("Stored link data for", image)
+	});
+	
 	pendingRes[id].redirect(301, link);
 	// Done!
 }, redirectToError);
@@ -70,18 +82,29 @@ function initializeWebServer() {
 					scale: scale, 
 					id: jobID
 				},
-				noCache = req.query.no_cache || config.no_cache;
+				noCache = req.query.no_cache || config.no_cache,
+				lookup;
 	
 			if (job.url.slice(0, 7) !== 'http://') {
 				job.url = "http://" + job.url;
 			}
+			
+			lookup = {url: job.url, scale: job.scale};
+			
+			if (noCache) {
+				lookup.noCache = true;
+			}
 				
-		    client.get(job.url + job.scale + (noCache? '???' : ''), function (err, link) {
-		    	if (link) {
+			utils.getImageData(lookup, connection, function (err, image) {
+		    	if (image.link) {
 		    		job.status = "auto_complete";
 		    		console.log(["Job ID:", job.id, "-", job.status].join(' ').cyan);
-		    		res.redirect(302, link);
+		    		res.redirect(302, image.link);
 		    		return;
+		    	} else {
+		    		utils.setImageData(lookup, connection, function (err, image) {
+		    			console.log("Creating new entry for image", image)
+		    		});
 		    	}
 				
 				pendingRes[jobID] = res;

@@ -49,7 +49,8 @@ var Boss = function (config) {
 Boss.prototype.processIncoming = function (rData) {
 	var self = this,
 		jobResults = JSON.parse(rData),
-		jobInfo = this.pendingJobs[jobResults.id],
+		jobInfo = this.pendingJobs[jobResults.id];
+		console.log(jobInfo)
 		jobProfession = jobInfo.profession;
 		
 	delete jobInfo.profession;

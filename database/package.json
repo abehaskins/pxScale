@@ -1,0 +1,16 @@
+{
+  "name": "pxScale-rethinkdb",
+  "version": "0.0.0",
+  "description": "",
+  "main": "setup.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "rethinkdb": "~1.15.0-0",
+    "express": "~4.10.1",
+    "jwt-simple": "~0.2.0"
+  }
+}

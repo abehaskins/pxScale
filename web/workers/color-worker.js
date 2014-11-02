@@ -5,12 +5,25 @@ var utils = require('../utils/utils'),
 	gm = require('gm'),
 	_ = require('lodash'),
 	redis = require('redis'),
-	Worker = require('../utils/worker').Worker;
+	Worker = require('../utils/worker').Worker,
+	r = require('rethinkdb'),
+	table = r.table("images"),
+	connection;
 	
 var worker = new Worker("color");
 
-worker.work = function (data, callback) {
-	var fOrig = data.fOrig;
+worker.init = function () {
+	r.connect({
+	    host: 'localhost',
+	    port: 28015,
+	    db: "pxscale_data"
+	}, function (err, conn) {
+	    connection = conn;
+	});
+}
+
+worker.work = function (job, callback) {
+	var fOrig = job.fOrig;
 	
 	var small = {
 		filename: fOrig,
@@ -37,7 +50,7 @@ worker.work = function (data, callback) {
 				(small.colors[color] || (small.colors[color] = {count: 0})).count += 1;
 			}
 			
-			for (colorId in small.colors) {
+			for (var colorId in small.colors) {
 				color = small.colors[colorId];
 				color.percent = parseFloat(((color.count/small.area)*100).toFixed(2));
 				colorsArray.push({id: colorId, percent: color.percent, count: color.count});

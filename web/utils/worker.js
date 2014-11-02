@@ -1,6 +1,6 @@
 var	socket = require('./socket'),
-	secrets = require('./secrets'),
-	config = require(['.', 'config', process.argv[2]].join('/')),
+	secrets = require('../config/secrets'),
+	config = require(['..', 'config', process.argv[2]].join('/')),
 	Firebase = require('firebase'),
 	colors = require('colors'),
 	utils = require('./utils');
