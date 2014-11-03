@@ -8,7 +8,7 @@ RUN apt-get update
 # install nodejs and npm
 RUN apt-get install -y nodejs npm git git-core graphicsmagick redis-server
 COPY . /src
-RUN cd /src; chmod +x ./start.sh
+RUN chmod +x /src/start.sh
 RUN cd /src; npm install
-CMD cd /src; ./start.sh
+CMD cd /src; ./start.sh prod
 EXPOSE 3000

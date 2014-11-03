@@ -1,7 +1,7 @@
 var express = require('express'),
 	Q = require('q'),
 	colors = require('colors'),
-	r = require('rethinkdb'),
+	db = require('./utils/db'),
 	fs = require('fs'),
 	Firebase = require("firebase"),
 	secrets = require("./config/secrets"),
@@ -22,17 +22,7 @@ var app = express(),
 	statusRef = rootRef.child('status/web'),
 	completedLogRef = rootRef.child('log/completed'),
 	failedLogRef = rootRef.child('log/failed'),
-	pendingRes = {},
-	table = r.table("images"),
-	connection;
-	
-r.connect({
-    host: 'localhost',
-    port: 28015,
-    db: "pxscale_data"
-}, function (err, conn) {
-	connection = conn;	
-});
+	pendingRes = {};
 
 boss.on("download", function (job, id, results) {
 	// Success	
@@ -55,7 +45,7 @@ boss.on("scale", function (job, id, results) {
 		time: Firebase.ServerValue.TIMESTAMP
 	});
 	
-	utils.updateImageData(lookup, {link: link}, connection, function (err, image) {
+	db.updateImageData(lookup, {link: link}, function (err, image) {
 		console.log("Stored link data for", image)
 	});
 	
@@ -95,14 +85,14 @@ function initializeWebServer() {
 				lookup.noCache = true;
 			}
 				
-			utils.getImageData(lookup, connection, function (err, image) {
+			db.getImageData(lookup, function (err, image) {
 		    	if (image.link) {
 		    		job.status = "auto_complete";
 		    		console.log(["Job ID:", job.id, "-", job.status].join(' ').cyan);
 		    		res.redirect(302, image.link);
 		    		return;
 		    	} else {
-		    		utils.setImageData(lookup, connection, function (err, image) {
+		    		db.setImageData(lookup, function (err, image) {
 		    			console.log("Creating new entry for image", image)
 		    		});
 		    	}

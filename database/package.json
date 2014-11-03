@@ -11,6 +11,7 @@
   "dependencies": {
     "rethinkdb": "~1.15.0-0",
     "express": "~4.10.1",
-    "jwt-simple": "~0.2.0"
+    "jwt-simple": "~0.2.0",
+    "body-parser": "~1.9.2"
   }
 }

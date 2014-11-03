@@ -1,2 +1,4 @@
 echo "Running rethinkdb..."
-rethinkdb --bind all
+rethinkdb --bind all &
+echo "Running HTTP interface..."
+nodejs interface.js
