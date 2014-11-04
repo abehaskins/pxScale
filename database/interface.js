@@ -22,6 +22,12 @@ app.use(function (req, res, next) {
 
     next();
 });
+
+app.use(function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*');
+
+    next();
+});
     
 r.connect({
     host: 'localhost',
@@ -64,9 +70,13 @@ app.post("/:type/", function (req, res) {
     });    
 });
 
-app.get("/:type/:id", function (req, res) {
-    var table = r.table(req.params.type);
-    table.get(req.params.id).run(connection, function (err, result) {
+app.get(/\/([^/]+)\/(.+)/, function (req, res) {
+
+    var type = req.params[0],
+        url = req.params[1],
+        table = r.table(type);
+        
+    table.filter({url: url}).coerceTo("array").run(connection, function (err, result) {
         res.write(
             JSON.stringify(
                 {error: err, success: result}
@@ -77,7 +87,7 @@ app.get("/:type/:id", function (req, res) {
     
 });
 
-app.delete("/:type/:id", function (req, res) {
+app.delete(/\/([^/]+)\/(.+)/, function (req, res) {
     if (!req.auth.admin == true) {
         res.write(
             JSON.stringify(
@@ -87,8 +97,11 @@ app.delete("/:type/:id", function (req, res) {
         res.end();      
     }
     
-    var table = r.table(req.params.type);
-    table.get(req.params.id).delete().run(connection, function (err, result) {
+    var type = req.params[0],
+        url = req.params[1],
+        table = r.table(type);
+    
+    table.filter({url: url}).delete().run(connection, function (err, result) {
         res.write(
             JSON.stringify(
                 {error: err, success: result}
@@ -112,4 +125,4 @@ app.get("/:type/", function (req, res) {
     }) 
 });
     
-app.listen(1440);
+app.listen(1444);

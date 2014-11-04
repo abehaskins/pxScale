@@ -6,31 +6,27 @@ var utils = require('../utils/utils'),
 	_ = require('lodash'),
 	redis = require('redis'),
 	Worker = require('../utils/worker').Worker,
-	r = require('rethinkdb'),
-	table = r.table("images"),
-	connection;
+	Db = require('../utils/db').Db,
+	connection, db, config, worker;
 	
-var worker = new Worker("color");
-
-worker.init = function () {
-	r.connect({
-	    host: 'localhost',
-	    port: 28015,
-	    db: "pxscale_data"
-	}, function (err, conn) {
-	    connection = conn;
-	});
+try {
+	config = require(['..', 'config', process.argv[2]].join('/'));
+} catch (err) {
+	console.log("Please specify a valid config mode".bgRed);
+	process.exit(1);
 }
 
+db = Db(config);
+db.setTable("colors");
+worker = new Worker("color");
+
 worker.work = function (job, callback) {
-	var fOrig = job.fOrig;
-	
 	var small = {
-		filename: fOrig,
-		colors: {}
-	};
-	
-	var image = gm(small.filename);
+			filename: job.fOrig,
+			colors: {}
+		},
+		image = gm(small.filename),
+		roundness = 10;
 	
 	image.identify(function (err, identify) {
 		small.size = identify.size;
@@ -39,12 +35,17 @@ worker.work = function (job, callback) {
 		image.toBuffer('ppm', function (err, bufferData) {
 			small.buffer = bufferData;
 			small.offset = (small.buffer.length) - ((small.size.width*small.size.height)*3);
-			var color, colorsArray = [];
+			var color, hex, colorsArray = [];
 			
 			for (var p=small.offset; p < small.area*3; p += 3) {
 				color = '#';
 				for (var c=0; c<3; c++) {
-					color += small.buffer[p+c].toString(16).toUpperCase();
+					var colorInt = small.buffer[p+c];
+					colorInt = Math.floor(colorInt - (colorInt % roundness) + (roundness/2));
+					hex = colorInt.toString(16).toUpperCase();
+					if (hex.length == 1)
+						hex = "0" + hex;
+					color += hex;
 				}
 				
 				(small.colors[color] || (small.colors[color] = {count: 0})).count += 1;
@@ -60,7 +61,12 @@ worker.work = function (job, callback) {
 				return color.percent;
 			}).reverse().value();
 			
-			console.log(small.colorsByPercent);
+			db.setImageData(
+				{url: job.url, scale: job.scale, colors: small.colorsByPercent}, 
+				function (err, result) {
+					console.log(result);
+				}
+			);
 			
 			callback(null, true);
 		});

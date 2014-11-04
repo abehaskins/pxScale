@@ -1,0 +1,15 @@
+2014-11-03T02:46:04.901418848 0.010827s info: Initializing directory /home/abeisgreat/pxScale/web/rethinkdb_data
+2014-11-03T02:46:04.903677814 0.013086s info: Creating a default database for your convenience. (This is because you ran 'rethinkdb' without 'create', 'serve', or '--join', and the directory '/home/abeisgreat/pxScale/web/rethinkdb_data' did not already exist or is empty.)
+2014-11-03T02:46:04.903796004 0.013204s info: Running rethinkdb 1.15.1~0trusty (GCC 4.8.2)...
+2014-11-03T02:46:04.909499959 0.018908s info: Running on Linux 3.13.0-30-generic x86_64
+2014-11-03T02:46:04.909701115 0.019109s info: Using cache size of 100 MB
+2014-11-03T02:46:04.910584821 0.019997s warn: Cache size does not leave much memory for server and query overhead (available memory: 344 MB).
+2014-11-03T02:46:04.910768572 0.020180s warn: Cache size is very low and may impact performance.
+2014-11-03T02:46:04.910980433 0.020393s info: Loading data from directory /home/abeisgreat/pxScale/web/rethinkdb_data
+2014-11-03T02:46:04.952726029 0.062137s info: Listening for intracluster connections on port 29015
+2014-11-03T02:46:04.957116926 0.066528s info: Listening for client driver connections on port 28015
+2014-11-03T02:46:04.957375858 0.066785s info: Listening for administrative HTTP connections on port 8080
+2014-11-03T02:46:04.957396724 0.066806s info: Listening on addresses: 127.0.0.1, ::1
+2014-11-03T02:46:04.957417371 0.066826s info: To fully expose RethinkDB on the network, bind to all addresses
+2014-11-03T02:46:04.957438625 0.066848s info: by running rethinkdb with the `--bind all` command line option.
+2014-11-03T02:46:04.957460439 0.066869s info: Server ready

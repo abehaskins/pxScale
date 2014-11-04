@@ -1,7 +1,7 @@
 var express = require('express'),
 	Q = require('q'),
 	colors = require('colors'),
-	db = require('./utils/db'),
+	Db = require('./utils/db').Db,
 	fs = require('fs'),
 	Firebase = require("firebase"),
 	secrets = require("./config/secrets"),
@@ -22,7 +22,10 @@ var app = express(),
 	statusRef = rootRef.child('status/web'),
 	completedLogRef = rootRef.child('log/completed'),
 	failedLogRef = rootRef.child('log/failed'),
+	db = Db(config),
 	pendingRes = {};
+	
+db.setTable("redirects");
 
 boss.on("download", function (job, id, results) {
 	// Success	
