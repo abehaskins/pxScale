@@ -17,20 +17,43 @@ worker = new Worker("one-to-one");
 
 worker.work = function (job, callback) {
 	var imageObj = {
-		filename: "./bunk.png",
+		filename: process.argv[2],
 		colorsByPosition: {}
 	    },
-	    roundness = 10, // Amount to blur colors to deal with artifacting. 
-		image = gm(imageObj.filename);
+	    roundness = 10; // Amount to blur colors to deal with artifacting. 
+	
+	var image = gm(imageObj.filename);
 	
 	image.identify(function (err, identify) {
 		imageObj.size = identify.size;
 		imageObj.area = (imageObj.size.width*imageObj.size.height);
 		image.toBuffer('ppm', function (err, bufferData) {
-			var color, hex, colorInt;
+			var ppmInfo = {lines: []},
+				line = "",
+				color, hex, colorInt;
+	
 			imageObj.buffer = bufferData;
-			imageObj.offset = (imageObj.buffer.length) - ((imageObj.size.width*imageObj.size.height)*3);
-			
+			imageObj.offset = 0;
+	
+			for (var hI = 0; hI < imageObj.buffer.length; hI++) {
+				var char = String.fromCharCode(imageObj.buffer[hI]);
+				imageObj.offset += 1;
+				if (char == "\n") {
+					ppmInfo.lines.push(line);
+					line = "";
+					if (ppmInfo.lines.length == 3) break;
+				} else {
+					line += char;
+				}
+			}	
+	
+			imageObj.size = {
+				width: Number(ppmInfo.lines[1].split(' ')[0]),
+				height: Number(ppmInfo.lines[1].split(' ')[1])
+			};
+	
+			imageObj.area = imageObj.size.width * imageObj.size.height;
+	
 			// Seperate color worker info
 			for (var p=imageObj.offset; p < imageObj.area*3; p += 3) {
 				color = '#';
@@ -38,7 +61,7 @@ worker.work = function (job, callback) {
 					colorInt = imageObj.buffer[p+c];
 					colorInt = Math.floor(colorInt - (colorInt % roundness) + (roundness/2));
 					hex = colorInt.toString(16).toUpperCase();
-					if (hex.length == 1)
+					if (hex.length == 1) 
 						hex = "0" + hex;
 					color += hex;
 				}
@@ -57,34 +80,42 @@ worker.work = function (job, callback) {
 			var maxPixelSize = Math.floor(Math.min(imageObj.size.width, imageObj.size.height) / 2);
 	
 			//var matches=true;
-			for (var size = maxPixelSize; size > 0; size -= 1) {
+			for (var size = maxPixelSize; size > 1; size -= 1) {
 				var matches=true;
-				for (var start = 0; start <= imageObj.area; start += size) {
-					var startX = parseInt(start / imageObj.size.width, 10)*size,
-					    startY = parseInt(start % imageObj.size.width, 10),
-					    x1square = getSquarePoints(startX, startY, size),
-					    matchColor = null;
-			
-					for (var pointIndex in x1square) {
-						var point = x1square[pointIndex],
-						    pointColor = imageObj.colorsByPosition[point.y][point.x];
+							
+				if (!(imageObj.size.width % size) && !(imageObj.size.height % size)) {
+					for (var start = 0; start <= imageObj.area; start += size) {
+						var startX = parseInt(start / imageObj.size.width, 10)*size,
+						    startY = parseInt(start % imageObj.size.width, 10),
+						    x1square = getSquarePoints(startX, startY, size),
+						    matchColor = null;
+		
+						for (var pointIndex in x1square) {
+							var point = x1square[pointIndex],
+							    pointColor = imageObj.colorsByPosition[point.y][point.x];
 	
-						if (!pointColor) break;
+							if (!pointColor) break;
 	
-						if (!matchColor)
-							matchColor = pointColor;
+							if (!matchColor)
+								matchColor = pointColor;
 	
-						matches = (pointColor == matchColor) && matches;
+							matches = (pointColor == matchColor) && matches;
+	
+							if (!matches) break;
+						}	
 	
 						if (!matches) break;
 					}
-	
-					if (!matches) break;
+				} else {
+					matches = false;
 				}
 				if (matches) break;
 			}
 	
-			console.log(size, 1/size, matches, start, imageObj.area)
+			if (matches)
+				console.log("Found a match", size, 1/size, matches, start, imageObj.area);
+			else
+				console.log("File is stupid")
 		});
 	});
 }

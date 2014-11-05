@@ -125,4 +125,4 @@ app.get("/:type/", function (req, res) {
     }) 
 });
     
-app.listen(1444);
+app.listen(1440);

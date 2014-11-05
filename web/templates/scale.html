@@ -5,10 +5,10 @@
         <script>
             angular.module('pxScale', [])
                 .controller("ImageInfo", function ($scope, $http) {
-                    $scope.url = location.pathname;
+                    $scope.url = location.pathname + "?cbr";
                     $scope.link = location.pathname.replace(/\/(.+)x\//, '');
                     $scope.embed_link = location.href;
-                    $http.get('http://ocolonu.com:1444/colors/' + $scope.link)
+                    $http.get('http://ocolonu.com:1440/colors/' + $scope.link)
                         .success(function (result) {
                             $scope.colors = result.success[0].colors;
                         });
@@ -61,14 +61,11 @@
     </head>
     <body ng-app="pxScale" ng-controller="ImageInfo">
         <img ng-src="{{url}}" />
-        <div class="section">
+        <div class="section" ng-show="colors">
             <h2>Colors</h2>
             <div class="blob" ng-repeat="color in colors" title="{{color.id}}" ng-show="color.percent">
                 <div class="blob-preview" ng-style="{backgroundColor: color.id}"></div>
                 <div class="blob-info">{{color.id}} - {{color.percent}}%</div>
-            </div>
-            <div ng-show="!colors">
-                Loading...
             </div>
         </div>
         <div class="section">
