@@ -12,12 +12,12 @@ try {
 }
 
 db = Db(config);
-db.setTable("colors");
+db.setTable("o2o");
 worker = new Worker("one-to-one");
 
 worker.work = function (job, callback) {
 	var imageObj = {
-		filename: process.argv[2],
+		filename: job.fOrig,
 		colorsByPosition: {}
 	    },
 	    roundness = 10; // Amount to blur colors to deal with artifacting. 
@@ -112,10 +112,15 @@ worker.work = function (job, callback) {
 				if (matches) break;
 			}
 	
-			if (matches)
+			if (matches) {
 				console.log("Found a match", size, 1/size, matches, start, imageObj.area);
-			else
-				console.log("File is stupid")
+				var o2oRecord = {url: job.url, "1x": 1/size};
+				db.updateOrSetImageData({url: job.url}, o2oRecord, function (err) {
+					callback(err, true);	
+				});
+			} else {
+				callback(true);
+			}
 		});
 	});
 }

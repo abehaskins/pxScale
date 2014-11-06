@@ -50,7 +50,6 @@ Boss.prototype.processIncoming = function (rData) {
 	var self = this,
 		jobResults = JSON.parse(rData),
 		jobInfo = this.pendingJobs[jobResults.id];
-		console.log(jobInfo)
 		jobProfession = jobInfo.profession;
 		
 	delete jobInfo.profession;
@@ -63,14 +62,16 @@ Boss.prototype.processIncoming = function (rData) {
 	if (jobResults.status == "complete") {
 		console.log(["Job ID /", jobProfession, ":", jobResults.id, "-", jobResults.status].join(' ').green);
 		
-		self.callbacks[jobProfession].success(jobInfo, jobResults.id, jobResults.results);
+		if (self.callbacks[jobProfession] && self.callbacks[jobProfession].success)
+			self.callbacks[jobProfession].success(jobInfo, jobResults.id, jobResults.results);
 	}
 	
 	if (jobResults.status == "error") {
 		console.log(["Job ID /", jobProfession, ":", jobResults.id, "-", jobResults.status].join(' ').red);
 		console.error(jobResults.error.red);
 		
-		self.callbacks[jobProfession].error(jobInfo, jobResults.id, jobResults.error);
+		if (self.callbacks[jobProfession] && self.callbacks[jobProfession].error)
+			self.callbacks[jobProfession].error(jobInfo, jobResults.id, jobResults.error);
 	}
 }
 
@@ -86,7 +87,8 @@ Boss.prototype.demand = function (profession, suppliedJob, suppliedJobID) {
 	
 	if (!worker) {
 		console.log(("No workers of type '" + profession + "' known!").bgRed);
-		self.callbacks[profession].error(job, job.id, "download_failed");
+		if (self.callbacks[profession] && self.callbacks[profession].error)
+			self.callbacks[profession].error(job, job.id, "download_failed");
 		return;
 	}
 	

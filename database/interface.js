@@ -2,9 +2,22 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     jwt = require('jwt-simple'),
     r = require('rethinkdb'),
-    connection,
+    colors = require('colors'),
     secret = "gullywompus",
-    app = express();
+    app = express(),
+    devMode = process.argv[2],
+    connection,
+    config;
+    
+try {
+	config = require(['.', 'config', devMode].join('/'));
+} catch (err) {
+	console.log("Please specify a valid config mode".bgRed);
+	process.exit(1);
+}
+
+console.log(config)
+
     
 app.use(bodyParser.json());
 app.use(function (req, res, next) {
@@ -125,4 +138,4 @@ app.get("/:type/", function (req, res) {
     }) 
 });
     
-app.listen(1440);
+app.listen(config.interface_port);

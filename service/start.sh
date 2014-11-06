@@ -1,3 +1,4 @@
+#!/usr/bin/env sh
 echo "Running Download Worker..."
 nodejs workers/download-worker.js $1 &
 echo "Running Scale Worker..."

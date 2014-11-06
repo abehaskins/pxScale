@@ -7,7 +7,7 @@ var utils = require('../utils/utils'),
 	redis = require('redis'),
 	Worker = require('../utils/worker').Worker,
 	Db = require('../utils/db').Db,
-	connection, db, config, worker;
+	db, config, worker;
 	
 try {
 	config = require(['..', 'config', process.argv[2]].join('/'));
@@ -61,8 +61,13 @@ worker.work = function (job, callback) {
 				return color.percent;
 			}).reverse().value();
 			
-			db.setImageData(
-				{url: job.url, scale: job.scale, colors: small.colorsByPercent}, 
+			var colorRecord = {
+				url: job.url, 
+				scale: job.scale, 
+				colors: small.colorsByPercent
+			};
+			
+			db.updateOrSetImageData({url: job.url}, colorRecord, 
 				function (err, result) {
 					console.log(result);
 				}

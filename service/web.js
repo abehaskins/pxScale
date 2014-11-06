@@ -7,10 +7,11 @@ var express = require('express'),
 	secrets = require("./config/secrets"),
 	utils = require('./utils/utils'),
 	Boss = require('./utils/boss').Boss,
+	devMode = process.argv[2],
 	config;
 	
 try {
-	config = require(['.', 'config', process.argv[2]].join('/'));
+	config = require(['.', 'config', devMode].join('/'));
 } catch (err) {
 	console.log("Please specify a valid config mode".bgRed);
 	process.exit(1);
@@ -35,6 +36,7 @@ boss.on("download", function (job, id, results) {
 	
 	boss.demand("scale", job, id);
 	boss.demand("color", job);
+	boss.demand("one-to-one", job);
 }, redirectToError);
 
 boss.on("scale", function (job, id, results) {
@@ -63,9 +65,15 @@ boss.on("color", function (job, id, results) {
 });
 
 function initializeWebServer() {
+	app.get('/env.js', function (req, res) {
+		if (devMode == "dev")
+			res.sendFile([__dirname, 'config/frontend-dev.js'].join('/'));
+		else if (devMode == "prod")
+			res.sendFile([__dirname, 'config/frontend-prod.js'].join('/'));
+	});
 	
 	app.get(/\/([^/]+x)\/(.+)/, function (req, res) {
-		if (req.headers.accept.indexOf("html") !== -1) {
+		if (!req.headers.accept || req.headers.accept.indexOf("html") !== -1) {
 			res.sendFile([__dirname, 'templates', 'scale.html'].join('/'));
 		} else {
 			var jobID = utils.getUniqueID(),

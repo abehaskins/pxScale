@@ -4,20 +4,28 @@ r.connect({
         host: 'localhost',
         port: 28015
 }, function (err, conn) {
+    console.log(err)
     r.dbCreate('pxscale_data')
         .run(conn, function (err) {
-            var redirects, colors;
+            var redirects, colors, o2o;
+            
+            console.log(err)
             
             conn.use("pxscale_data");
             
             r.tableCreate("redirects").run(conn, function (err, conn) {
                 redirects = true;
-                finish(redirects, colors);              
+                finish(redirects, colors, o2o);              
             });
             
             r.tableCreate("colors").run(conn, function (err, conn) {
                 colors = true;
-                finish(redirects, colors);
+                finish(redirects, colors, o2o);
+            });
+            
+            r.tableCreate("o2o").run(conn, function (err, conn) {
+                o2o = true;
+                finish(redirects, colors, o2o);
             });
         })
 });
