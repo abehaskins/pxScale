@@ -119,7 +119,11 @@ worker.work = function (job, callback) {
 					callback(err, true);	
 				});
 			} else {
-				callback(true);
+				console.log("No match found, assuming 1x");
+				var o2oRecord = {url: job.url, "1x": 1};
+				db.updateOrSetImageData({url: job.url}, o2oRecord, function (err) {
+					callback(err, true);	
+				});
 			}
 		});
 	});

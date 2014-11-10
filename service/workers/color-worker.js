@@ -26,12 +26,14 @@ worker.work = function (job, callback) {
 			colors: {}
 		},
 		image = gm(small.filename),
-		roundness = 10;
+		roundness = 1;
 	
 	image.identify(function (err, identify) {
 		small.size = identify.size;
 		small.area = (small.size.width*small.size.height);
 		small.colorsByPercent = {};
+		var cache = {};
+		
 		image.toBuffer('ppm', function (err, bufferData) {
 			small.buffer = bufferData;
 			small.offset = (small.buffer.length) - ((small.size.width*small.size.height)*3);
@@ -54,17 +56,52 @@ worker.work = function (job, callback) {
 			for (var colorId in small.colors) {
 				color = small.colors[colorId];
 				color.percent = parseFloat(((color.count/small.area)*100).toFixed(2));
-				colorsArray.push({id: colorId, percent: color.percent, count: color.count});
+				colorsArray.push({
+					id: colorId, 
+					percent: color.percent, 
+					count: color.count
+				});
 			}
 			
 			small.colorsByPercent = _(colorsArray).sortBy(function (color) {
 				return color.percent;
 			}).reverse().value();
 			
+		    var sortedColors = small.colorsByPercent
+		    	.sort(function (a, b) {
+		    		if (a.percent > b.percent)
+		    			return -1;
+		    		if (a.percent < b.percent)
+		    			return 1;
+		    		
+		    		return 0;
+		    	});
+		
+		    var ignores = {},
+		    	finalColors = {};
+		
+		    sortedColors.forEach(function (artifactColor) {
+		    	console.log(artifactColor)
+		        if (ignores[artifactColor.id]) {
+		        	finalColors[ignores[artifactColor.id]] += artifactColor.percent;
+		        	return;
+		        }
+		       
+		        sortedColors.forEach(function (color) {
+		        	var diff = differenceInColor(color.id, artifactColor.id);
+		
+		            if (diff <= 20) {
+		            	ignores[color.id] = artifactColor.id;
+		            	
+		            	finalColors[artifactColor.id] = artifactColor.percent;
+		        	}	
+		        })
+		    });
+		    
 			var colorRecord = {
 				url: job.url, 
-				scale: job.scale, 
-				colors: small.colorsByPercent
+				colors_raw: small.colorsByPercent,
+				colors: finalColors
 			};
 			
 			db.updateOrSetImageData({url: job.url}, colorRecord, 
@@ -76,4 +113,38 @@ worker.work = function (job, callback) {
 			callback(null, true);
 		});
 	});
+}
+
+function closestColor(targetColor, possibleColors, cache) {
+	var closestColor, smallestDifference = Infinity;
+
+	if (cache[targetColor]) return cache[targetColor];
+
+	possibleColors.forEach(function (possibleColor) {
+		var diff = differenceInColor(targetColor, possibleColor);
+
+		if (diff < smallestDifference) {
+			closestColor = possibleColor;
+			smallestDifference = diff;
+		}
+	});
+
+	cache[targetColor] = closestColor;
+	
+	return [closestColor, smallestDifference]
+}
+
+function differenceInColor(colorA, colorB) {
+	var a = colorA.slice(1),
+		b = colorB.slice(1),
+		diff = 0;
+
+	for (var n=0; n<6; n+=2) {
+		var aInt = parseInt(a.slice(n, n+2), 16),
+			bInt = parseInt(b.slice(n, n+2), 16);
+
+		diff += Math.abs(aInt - bInt);
+	}
+
+	return diff;
 }

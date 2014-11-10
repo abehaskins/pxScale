@@ -72,46 +72,48 @@ function initializeWebServer() {
 			res.sendFile([__dirname, 'config/frontend-prod.js'].join('/'));
 	});
 	
-	app.get(/\/([^/]+x)\/(.+)/, function (req, res) {
-		if (!req.headers.accept || req.headers.accept.indexOf("html") !== -1) {
-			res.sendFile([__dirname, 'templates', 'scale.html'].join('/'));
-		} else {
-			var jobID = utils.getUniqueID(),
-				scale = Number(req.params[0].replace('x', '')),
-				job = {
-					url: req.params[1].replace(/https?:\/\/?/, 'http://'), 
-					scale: scale, 
-					id: jobID
-				},
-				noCache = req.query.no_cache || config.no_cache,
-				lookup;
+	app.get(/info\/(.+)/, function (req, res) {
+		res.sendFile([__dirname, 'templates', 'info.html'].join('/'));
+	})
 	
-			if (job.url.slice(0, 7) !== 'http://') {
-				job.url = "http://" + job.url;
-			}
-			
-			lookup = {url: job.url, scale: job.scale};
-			
-			if (noCache) {
-				lookup.noCache = true;
-			}
-				
-			db.getImageData(lookup, function (err, image) {
-		    	if (image.link) {
-		    		job.status = "auto_complete";
-		    		console.log(["Job ID:", job.id, "-", job.status].join(' ').cyan);
-		    		res.redirect(302, image.link);
-		    		return;
-		    	} else {
-		    		db.setImageData(lookup, function (err, image) {
-		    			console.log("Creating new entry for image", image)
-		    		});
-		    	}
-				
-				pendingRes[jobID] = res;
-				boss.demand("download", job, jobID);
-		    });
+	app.get(/\/([^/]+)x\/(.+)/, function (req, res) {
+		var jobID = utils.getUniqueID(),
+			scale = Number(req.params[0]),
+			job = {
+				url: req.params[1].replace(/https?:\/\/?/, 'http://'), 
+				scale: scale, 
+				id: jobID
+			},
+			noCache = req.query.no_cache || config.no_cache,
+			lookup;
+
+		if (job.url.slice(0, 7) !== 'http://') {
+			job.url = "http://" + job.url;
 		}
+		
+		lookup = {url: job.url, scale: job.scale};
+		
+		if (noCache) {
+			lookup.noCache = true;
+		}
+			
+		console.log(lookup)
+		db.getImageData(lookup, function (err, image) {
+	    	if (image.link) {
+	    		job.status = "auto_complete";
+	    		console.log(["Job ID:", job.id, "-", job.status].join(' ').cyan);
+	    		res.redirect(302, image.link);
+	    		return;
+	    	} else {
+	    		delete lookup.noCache;
+	    		db.setImageData(lookup, function (err, image) {
+	    			console.log("Creating new entry for image", image)
+	    		});
+	    	}
+			
+			pendingRes[jobID] = res;
+			boss.demand("download", job, jobID);
+	    });
 	});
 	
 	app.listen(config.http_port);

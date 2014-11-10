@@ -20,9 +20,10 @@ worker.work = function (data, callback) {
 
 // Check that we have something, .png, .bat, etc. Literally any extension.
 function verifyURLExtension(url, callback) {
-	var ext = url.slice(url.search(/\.([^\.]+)$/), url.length);
+	var ext = utils.getFileExtension(url);
+	console.log(ext)
 	
-	if (ext.indexOf("/") !== -1) {
+	if (!ext) {
 		callback("no_extension");
 	} else {
 		callback(null, ext);

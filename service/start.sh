@@ -5,5 +5,7 @@ echo "Running Scale Worker..."
 nodejs workers/scale-worker.js $1 &
 echo "Running Color Worker..."
 nodejs workers/color-worker.js $1 &
+echo "Running o2o Worker..."
+nodejs workers/o2o-worker.js $1 &
 echo "Running Web..."
 nodejs web.js $1

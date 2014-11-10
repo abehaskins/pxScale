@@ -27,5 +27,16 @@ module.exports = {
 	
 	getUniqueID: function () {
 		return Math.random().toString().replace('.', '');
+	},
+	
+	getFileExtension: function (path) {
+		var ext = path.slice(path.search(/\.([^\.]+)$/), path.length);
+		console.log(ext)
+		
+		if (ext.indexOf("/") !== -1) {
+			return false;
+		} else {
+			return ext;
+		}
 	}
 }

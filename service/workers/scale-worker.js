@@ -29,7 +29,12 @@ worker.work = function (data, callback) {
 
 // Transform the image we've downloaded
 function transformImage(fOrig, fScaled, scale, callback) {
-	var image = gm(fOrig);
+	var image = gm(fOrig),
+		ext = utils.getFileExtension(fOrig).replace('.', '');
+		
+	if (!ext) {
+		return callback("no_extension", null);
+	}
 	
 	// Open the image, get some stats, then resize the image.
 	image.size(function (err, size) {
@@ -39,6 +44,7 @@ function transformImage(fOrig, fScaled, scale, callback) {
 				.filter("Box")
 				.resize(size.width*scale, size.height*scale)
 				.setFormat("gif")
+				.quality(100)
 				.write(fScaled, function (err) {
 					if (err) callback('resize_failed');
 					else callback(null)
